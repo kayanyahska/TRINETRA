@@ -34,25 +34,33 @@ while True:
         detections = net.forward()  # getting the detections from the network
 
         persons = []
-        person_roi = []
-        motorbi = []
-        for i in np.arange(0, detections.shape[2]):
+        motorbike = []
+        for detection in detections.reshape(-1,7) :
             # extract the confidence associated with the prediction
-            confidence = detections[0, 0, i, 2]
+            confidence = float(detection[2])
+            
+            # filter out weak detections by ensuring the confidence
+            # is greater than minimum confidence
             if confidence > 0.5:
-                idx = int(detections[0, 0, i, 1])
-
+                
+                # extract index of class label from the detections
+                idx = int(detection[1])
+                
                 if idx == 15:
-                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-                    (startX, startY, endX, endY) = box.astype("int")
-                    # roi = box[startX:endX, startY:endY/4]
-                    # person_roi.append(roi)
+                    startX = int(detection[3] * w)
+                    startY = int(detection[4] * h)
+                    endX = int(detection[5] * w)
+                    endY= int(detection[6] * h)
                     persons.append((startX, startY, endX, endY))
 
                 if idx == 14:
-                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-                    (startX, startY, endX, endY) = box.astype("int")
-                    motorbi.append((startX, startY, endX, endY))
+                    startX = int(detection[3] * w)
+                    startY = int(detection[4] * h)
+                    endX = int(detection[5] * w)
+                    endY= int(detection[6] * h)
+                    
+                    motorbike.append((startX, startY, endX, endY))
+
 
         xsdiff = 0
         xediff = 0
@@ -60,7 +68,7 @@ while True:
         yediff = 0
         p = ()
 
-        for i in motorbi:
+        for i in motorbike:
             mi = float("Inf")
             for j in range(len(persons)):
                 xsdiff = abs(i[0] - persons[j][0])
@@ -71,7 +79,6 @@ while True:
                 if (xsdiff+xediff+ysdiff+yediff) < mi:
                     mi = xsdiff+xediff+ysdiff+yediff
                     p = persons[j]
-                    # r = person_roi[j]
 
 
             if len(p) != 0:
@@ -95,7 +102,7 @@ while True:
 	            	gray_img = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
 	            	img = np.array(gray_img).reshape(1, 50, 50, 1)
 	            	img = img/255.0
-	            	prediction = loaded_model.predict_proba([img])
+	            	prediction = Helmet_model.predict_proba([img])
 	            	cv2.rectangle(frame, (p[0], p[1]), (p[0]+(p[2]-p[0]), p[1]+(p[3]-p[1])//4), COLORS[0], 2)
 	            	cv2.putText(frame, str(round(prediction[0][0],2)), (p[0], y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[0], 2)
 
