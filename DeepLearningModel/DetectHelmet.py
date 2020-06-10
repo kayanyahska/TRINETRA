@@ -7,33 +7,27 @@ import cv2
 from keras.models import load_model
 
 CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-#CLASSES = ['motorbike', 'person']
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
-print("[INFO] loading model...")
+print("[INFO] loading model.......................................................................")
 net = cv2.dnn.readNetFromCaffe('MobileNetSSD_deploy.prototxt.txt', 'MobileNetSSD_deploy.caffemodel')
 
-print('Loading helmet model...')
-loaded_model = load_model('new_helmet_model.h5')
-loaded_model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+print('Loading helmet model.......................................................................')
+Helmet_model = load_model('new_helmet_model.h5')
+Helmet_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-print("[INFO] starting video stream...")
+print("[INFO] starting video stream................................................................")
 
 cap = cv2.VideoCapture('vid1.mp4')
-
-# time.sleep(2.0)
 fps = FPS().start()
-
-# i = True
 while True:
-	# i = not i
-	# if i==True:
 
     try:
 
         ret, frame = cap.read()
         frame = imutils.resize(frame, width=600, height=600)
-        (h, w) = frame.shape[:2]
+        h = 600
+	w = 600
         blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 0.007843, (300, 300), 127.5)
         net.setInput(blob)
 
